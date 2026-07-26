@@ -150,34 +150,35 @@ public class JobDriver_Mounted : JobDriver
             {
                 delegate
                 {
-                    if (IsParking)
+                     if (IsParking)
                         pawn.pather.StopDead();
 
-                    //Check mount first. If it's null then they must have dismounted outside the driver's control
-                    if (_riderData.Mount != null)
-                        if (_riderData.Mount.jobs.jobQueue.jobs.FirstOrDefault()?.job.def == JobDefOf.RemoveApparel)
-                        {
-                            var jobs = _riderData.Mount.jobs.jobQueue;
-                            jobs.EnqueueLast(new Job(ResourceBank.JobDefOf.Mounted, Rider) { count = 1 });
-                        }
-                        else
-                        {
-                            Rider.Dismount(
-                                pawn,
-                                _riderData,
-                                false,
-                                IsParking && pawn.Position.DistanceTo(_dismountingAt) < 5f ? _dismountingAt : default,
-                                waitForRider: !_interrupted);
-                        }
-                    IsParking = false;
+                     
+                     //Check mount first. If it's null then they must have dismounted outside the driver's control
+                     if (_riderData.Mount != null)
+                         if (_riderData.Mount.jobs.jobQueue.jobs.FirstOrDefault()?.job.def.HasModExtension<CanDoMounted>() ?? false)
+                         {
+                             var jobs = _riderData.Mount.jobs.jobQueue;
+                             jobs.EnqueueLast(new Job(ResourceBank.JobDefOf.Mounted, Rider) { count = 1 });
+                         }
+                         else
+                         {
+                             Rider.Dismount(
+                                 pawn,
+                                 _riderData,
+                                 false,
+                                 IsParking && pawn.Position.DistanceTo(_dismountingAt) < 5f ? _dismountingAt : default,
+                                 waitForRider: !_interrupted);
+                         }
+                     IsParking = false;
 
-                    //Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
-                    //TODO: See if the two could be unified
-                    if (!_isDespawning && !pawn.Faction.IsPlayer && !Rider.Spawned && pawn.Position.CloseToEdge(_map, ResourceBank.MapEdgeIgnore))
-                    {
-                        _isDespawning = true; //Avoid recurssive loop
-                        pawn.ExitMap(false, CellRect.WholeMap(_map).GetClosestEdge(pawn.Position));
-                    }
+                     //Check if the mount was meant to despawn along with the rider. This is already handled in the RiderShouldDismount but some spaghetti code elsewhere could bypass it
+                     //TODO: See if the two could be unified
+                     if (!_isDespawning && !pawn.Faction.IsPlayer && !Rider.Spawned && pawn.Position.CloseToEdge(_map, ResourceBank.MapEdgeIgnore))
+                     {
+                         _isDespawning = true; //Avoid recurssive loop
+                         pawn.ExitMap(false, CellRect.WholeMap(_map).GetClosestEdge(pawn.Position));
+                     }
                 }
             }
         };
