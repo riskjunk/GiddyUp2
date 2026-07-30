@@ -18,7 +18,8 @@ internal static class Patch_MakeDowned
             pawn.InvoluntaryDismount(pawnData.ReservedMount, pawnData);
         else if (pawnData.ReservedBy != null)
         {
-            pawnData.ReservedBy.InvoluntaryDismount(pawn, pawnData);
+            var reservedBy = pawnData.ReservedBy;
+            reservedBy.InvoluntaryDismount(pawn, reservedBy.GetExtendedPawnData());
             if (pawn.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer))
                 pawn.SetFaction(null); //If an enemy animal is downed, make it a wild animal so it can be rescued.
         }
@@ -31,10 +32,16 @@ internal static class Patch_SetDead
     private static void Postfix(Pawn_HealthTracker __instance)
     {
         var pawn = __instance.pawn;
-        if (pawn.Faction != null && pawn.RaceProps.Humanlike)
+        var pawnData = pawn.GetExtendedPawnData();
+        if (pawn.IsMounted())
         {
-            var pawnData = pawn.GetExtendedPawnData();
-            pawn.InvoluntaryDismount(pawnData.ReservedMount, pawnData);
+            pawn.Dismount(pawnData.Mount ?? pawnData.ReservedMount, pawnData, clearReservation: true);
+        }
+        else if (pawnData.Rider != null)
+        {
+            var rider = pawnData.Rider;
+            var riderData = rider.GetExtendedPawnData();
+            rider.Dismount(riderData.Mount ?? riderData.ReservedMount, riderData, clearReservation: true);
         }
     }
 }
