@@ -60,12 +60,15 @@ internal static class Patch_DetermineNextJob
         if (pawn.def.race.intelligence == Intelligence.Humanlike)
         {
             //Sanity check, make sure the mount driver is still valid
-            if (pawn.IsMounted() && pawn.IsColonist)
+            if (pawn.IsMounted())
             {
                 var pawnData = pawn.GetExtendedPawnData();
-                if ((pawnData.Mount.CurJobDef != ResourceBank.JobDefOf.Mounted && pawnData.Mount.CurJobDef != JobDefOf.RemoveApparel ) ||
-                    (pawnData.Mount.jobs.curDriver is JobDriver_Mounted driver && driver.Rider != pawn))
-                    pawn.Dismount(null, pawnData, true);
+                var mount = pawnData.Mount;
+                var hasValidMountedDriver = mount != null && mount.CurJobDef == ResourceBank.JobDefOf.Mounted && mount.jobs?.curDriver is JobDriver_Mounted driver &&  driver.Rider == pawn;
+                var allowedTemporaryJob = mount != null &&  mount.CurJobDef == JobDefOf.RemoveApparel;
+
+                if (!hasValidMountedDriver && !allowedTemporaryJob)
+                    pawn.Dismount(mount, pawnData, true);
             }
             //If a hostile pawn owns an animal, make sure it mounts it whenever possible
             else if (pawn.Faction.HostileTo(Current.gameInt.worldInt.factionManager.ofPlayer) &&
