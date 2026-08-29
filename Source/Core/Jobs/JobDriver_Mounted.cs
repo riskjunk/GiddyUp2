@@ -31,6 +31,7 @@ public class JobDriver_Mounted : JobDriver
     private bool _interrupted;
     private bool _isDespawning;
     private ExtendedPawnData _riderData = null!;
+    private ExtendedPawnData _mountData = null!;
     private Map _map = null!;
     private IntVec3 _startingPoint, _dismountingAt, _riderOriginalDestination;
     private PathEndMode _originalPeMode = PathEndMode.Touch;
@@ -74,6 +75,7 @@ public class JobDriver_Mounted : JobDriver
         this.FailOn(() => rider == null);
         Rider = rider!;
         _riderData = Rider.GetExtendedPawnData();
+        _mountData = pawn.GetExtendedPawnData();
         _isTrained = pawn.training != null && pawn.training.HasLearned(TrainableDefOf.Obedience);
         _map = Map;
         _startingPoint = pawn.Position;
@@ -145,6 +147,12 @@ public class JobDriver_Mounted : JobDriver
                 pawn.Rotation = Rider.Rotation;
                 if (_isTrained)
                     TryAttackEnemy(Rider);
+                if (_mountData.Rider == null && _riderData.Mount == pawn && Rider.IsMounted())
+                {
+                    Log.WarningOnce("Caught mount forgetting it was mounted", 51023);
+                    _mountData.Rider = _riderData.Pawn;
+                    _mountData.ReservedBy = _riderData.Pawn;
+                }
             },
             finishActions = new List<Action>
             {
