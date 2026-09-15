@@ -61,6 +61,8 @@ namespace GiddyUpCore.Core.Render
             if (parms.pawn.Rotation == Rot4.West)
                 offset.x = -offset.x;
 
+            offset += node.debugOffset;
+
             return offset;
         }
 
