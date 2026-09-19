@@ -58,9 +58,9 @@ internal static class Patch_TransferableOneWayWidget
         {
             var title = section.title;
             //This is mainly for mods that add new sections such as Colony Groups
-            if (title != "Capture" && title != "Prisoners" && title != "Mechanoids")
+            if (title != "Capture" && title != "Prisoners")
             {
-                if(title != "Animals")
+                if(title != "Animals" && title != "Mechanoids")
                     cachedTransferables.AddRange(section.cachedTransferables);
                 else
                     animalTransferables.AddRange(section.cachedTransferables);
