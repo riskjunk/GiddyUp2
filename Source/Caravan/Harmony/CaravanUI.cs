@@ -110,6 +110,13 @@ internal static class Patch_TransferableOneWayWidget
     private static Pawn? GetFirstValidPawn(Pawn animal, List<Pawn> pawns) =>
         pawns.FirstOrDefault(x => x.IsCapableOfRiding(out _) && !x.IsTooHeavy(animal) && x.GetExtendedPawnData().selectedForCaravan);
 
+    private static Pawn? GetFirstValidMount(Pawn rider, List<Pawn> pawns) =>
+        pawns.FirstOrDefault(x =>
+        {
+            var mountData = x.GetExtendedPawnData();
+            return x.IsMountable(out _, rider) && mountData is { selectedForCaravan: true, ReservedBy: null };
+        });
+
     private static void UnsetDataForRider(ExtendedPawnData pawnData)
     {
         pawnData.ReservedMount.GetExtendedPawnData().ReservedBy = null;
