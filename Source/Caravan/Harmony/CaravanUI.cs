@@ -70,7 +70,7 @@ internal static class Patch_TransferableOneWayWidget
         }
 
         //It quacks like a duck, so it is one!
-        SetSelectedForCaravan(pawn, trad);
+        SetSelectedForCaravan(pawn, trad, pawns);
         if (pawn.RaceProps.Animal && pawns.Count > 0)
             HandleAnimal(num, buttonRect, pawn, pawns, trad);
         else
@@ -79,7 +79,7 @@ internal static class Patch_TransferableOneWayWidget
         return num - (buttonWidth - 25f);
     }
 
-    private static void SetSelectedForCaravan(Pawn pawn, TransferableOneWay trad)
+    private static void SetSelectedForCaravan(Pawn pawn, TransferableOneWay trad, List<Pawn> pawns)
     {
         var pawnData = pawn.GetExtendedPawnData();
         var reservedMount = pawnData.ReservedMount;
@@ -96,9 +96,19 @@ internal static class Patch_TransferableOneWayWidget
         if (reservedMount != null && (reservedMount.Dead || reservedMount.Downed))
             UnsetDataForRider(pawnData);
 
+        if (trad.CountToTransfer > 0 && !pawnData.selectedForCaravan && pawn.IsEverMountable())
+        {
+            var selectedPawn = GetFirstValidPawn(pawn, pawns);
+            if (selectedPawn != null)
+                SelectMountRider(pawnData, selectedPawn.GetExtendedPawnData(), pawn, selectedPawn);
+        }
+        
         if (trad.CountToTransfer > 0)
             pawnData.selectedForCaravan = true;
     }
+
+    private static Pawn? GetFirstValidPawn(Pawn animal, List<Pawn> pawns) =>
+        pawns.FirstOrDefault(x => x.IsCapableOfRiding(out _) && !x.IsTooHeavy(animal) && x.GetExtendedPawnData().selectedForCaravan);
 
     private static void UnsetDataForRider(ExtendedPawnData pawnData)
     {
