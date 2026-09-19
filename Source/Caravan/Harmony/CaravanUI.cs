@@ -53,12 +53,18 @@ internal static class Patch_TransferableOneWayWidget
 
         var buttonRect = new Rect(num - buttonWidth, 0f, buttonWidth, rect.height);
         var cachedTransferables = new List<TransferableOneWay>();
+        var animalTransferables = new List<TransferableOneWay>();
         foreach (var section in widget.sections)
         {
             var title = section.title;
             //This is mainly for mods that add new sections such as Colony Groups
-            if (title != "Capture" && title != "Prisoners" && title != "Animals" && title != "Mechanoids")
-                cachedTransferables.AddRange(section.cachedTransferables);
+            if (title != "Capture" && title != "Prisoners" && title != "Mechanoids")
+            {
+                if(title != "Animals")
+                    cachedTransferables.AddRange(section.cachedTransferables);
+                else
+                    animalTransferables.AddRange(section.cachedTransferables);
+            }
         }
 
         var pawns = new List<Pawn>();
@@ -69,8 +75,15 @@ internal static class Patch_TransferableOneWayWidget
                 pawns.Add(towPawn);
         }
 
+        var allPawns = new List<Pawn>(pawns);
+        foreach (var tow in animalTransferables)
+        {
+            if(tow.AnyThing is Pawn animal)
+                allPawns.Add(animal);
+        }
+
         //It quacks like a duck, so it is one!
-        SetSelectedForCaravan(pawn, trad, pawns);
+        SetSelectedForCaravan(pawn, trad, allPawns);
         if (pawn.RaceProps.Animal && pawns.Count > 0)
             HandleAnimal(num, buttonRect, pawn, pawns, trad);
         else
