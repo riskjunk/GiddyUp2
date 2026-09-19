@@ -109,18 +109,27 @@ internal static class Patch_TransferableOneWayWidget
         if (reservedMount != null && (reservedMount.Dead || reservedMount.Downed))
             UnsetDataForRider(pawnData);
 
-        if (trad.CountToTransfer > 0 && !pawnData.selectedForCaravan && pawn.IsEverMountable())
+        if (trad.CountToTransfer > 0 && !pawnData.selectedForCaravan)
         {
-            var selectedPawn = GetFirstValidPawn(pawn, pawns);
-            if (selectedPawn != null)
-                SelectMountRider(pawnData, selectedPawn.GetExtendedPawnData(), pawn, selectedPawn);
+            if (pawn.IsEverMountable())
+            {
+                var selectedPawn = GetFirstValidRider(pawn, pawns);
+                if (selectedPawn != null)
+                    SelectMountRider(pawnData, selectedPawn.GetExtendedPawnData(), pawn, selectedPawn);
+            }
+            else if (pawn.IsCapableOfRiding(out _))
+            {
+                var selectedMount = GetFirstValidMount(pawn, pawns);
+                if (selectedMount != null)
+                    SelectMountRider(selectedMount.GetExtendedPawnData(), pawnData, selectedMount, pawn);
+            }
         }
         
         if (trad.CountToTransfer > 0)
             pawnData.selectedForCaravan = true;
     }
 
-    private static Pawn? GetFirstValidPawn(Pawn animal, List<Pawn> pawns) =>
+    private static Pawn? GetFirstValidRider(Pawn animal, List<Pawn> pawns) =>
         pawns.FirstOrDefault(x => x.IsCapableOfRiding(out _) && !x.IsTooHeavy(animal) && x.GetExtendedPawnData().selectedForCaravan);
 
     private static Pawn? GetFirstValidMount(Pawn rider, List<Pawn> pawns) =>
